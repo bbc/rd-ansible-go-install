@@ -1,0 +1,50 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: false
+  become_method: sudo
+  vars:
+    proxy_env:
+      http_proxy: "{{ lookup('env','http_proxy') }}"
+      https_proxy: "{{ lookup('env','https_proxy') }}"
+      rsync_proxy: "{{ lookup('env','rsync_proxy') }}"
+    python_install_command: "test -e /usr/bin/python || ( export http_proxy={{ proxy_env.http_proxy }} && apt -y update && apt install -y python-minimal )"
+  pre_tasks:
+    - name: Install python2.x for Ansible when we are not using python3
+      raw: "{{ python_install_command }}"
+      changed_when: false
+      when:
+        - ansible_python_interpreter is not defined
+    - name: Gather facts
+      setup:
+  roles:
+    - role: "{{ playbook_dir | dirname }}"
+  tasks:
+    - name: Get go information
+      command: "{{ go_install_path }}/go/bin/go version"
+      register: version_test
+      changed_when: false
+
+    - name: Output version
+      debug:
+        var: version_test.stdout
+        
+    - name: Copy go source code to test
+      copy:
+        src: helloworld.go
+        dest: "~/"
+
+    - name: Run test code
+      command: "{{ go_install_path }}/go/bin/go run ~/helloworld.go"
+      changed_when: false
+      register: run_test
+
+    - name: Gather and output test code output
+      debug:
+        msg: "{{ ' '.join(run_test.cmd) }}"
+
+    - name: Gather and output test code output
+      debug:
+        var: run_test.stdout
+
+  environment: "{{ proxy_env }}"

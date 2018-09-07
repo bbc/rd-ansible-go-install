@@ -1,0 +1,21 @@
+---
+# module: rd-ansible-go-install/tasks/configure
+# description: Configure rd-ansible-go-install, specifically the environment and path
+
+- name: Add global environment variables
+  lineinfile:
+    dest: '/etc/environment'
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    create: yes
+    state: present
+  with_items:
+    - { line: "GOPATH={{ go_path }}", regexp: "^GOPATH" }
+  when: set_go_path
+
+- name: Set GOPATH for all users
+  template:
+    src: go-path.sh.j2
+    dest: /etc/profile.d/go-path.sh
+    mode: 0755
+  when: set_go_path

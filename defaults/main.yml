@@ -1,0 +1,21 @@
+---
+# name: go_install/defaults
+# description: ALL our default variables for go_install go in here
+#------------------------------------------------------------------------------
+# Packages - All our required packages we need installing
+#------------------------------------------------------------------------------
+
+# - pre-requisites -
+packages:                             # Packages required for go install
+    - git
+
+# - go variables -
+go_version: 1.11
+go_path: /opt/go
+go_install_path: /usr/local
+set_go_path: true
+
+# Inferred values, these mostly won't need changing
+go_tarball: "go{{ go_version }}.linux-amd64.tar.gz"                             # Specifically what TARBALL do we want?
+go_version_target: "go version go{{ go_version }} linux/amd64"                  # Version string which golang outputs
+go_download_location: "https://storage.googleapis.com/golang/{{ go_tarball }}"  # Where should we pull the TARBALL from

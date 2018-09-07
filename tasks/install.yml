@@ -1,0 +1,38 @@
+---
+# module: rd-ansible-go-install/tasks/install
+# description: Install the required packages and install or upgrade go itself
+
+- name: Install all required packages for go_install
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ packages }}"
+
+- name: See if go is installed and what version
+  command: "{{ go_install_path }}/go/bin/go version"
+  changed_when: false
+  failed_when: go_installed_version.rc not in [0,1,2]
+  register: go_installed_version
+
+- name: Pull down the Go tarball - When go is not installed or the desired version
+  get_url:
+    url: "{{ go_download_location }}"
+    dest: "/usr/local/src/{{ go_tarball }}"
+  when: ( go_installed_version.rc == 1 or
+          go_installed_version.stdout|default(0) != go_version_target )
+
+- name: Remove old installation of Go - When go is installed and is not the desired version
+  file:
+    path: "{{ go_install_path }}/go"
+    state: absent
+  when:
+    - go_installed_version.rc == 0
+    - go_installed_version.stdout|default(0) != go_version_target
+
+- name: Extract the Go tarball - when Go is not yet installed or not the desired version
+  unarchive:
+    src: /usr/local/src/{{ go_tarball }}
+    dest: "{{ go_install_path }}"
+    copy: no
+  when: ( go_installed_version.rc == 1 or
+          go_installed_version.stdout|default(0) != go_version_target )

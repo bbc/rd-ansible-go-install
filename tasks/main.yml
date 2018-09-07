@@ -1,0 +1,6 @@
+---
+# module: rd-ansible-go-install/tasks
+# description: Include the required files to install and configure go
+
+- include_tasks: install.yml
+- include_tasks: configure.yml
