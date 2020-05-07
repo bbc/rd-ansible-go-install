@@ -8,9 +8,9 @@
       http_proxy: "{{ lookup('env','http_proxy') }}"
       https_proxy: "{{ lookup('env','https_proxy') }}"
       rsync_proxy: "{{ lookup('env','rsync_proxy') }}"
-    python_install_command: "test -e /usr/bin/python || ( export http_proxy={{ proxy_env.http_proxy }} && apt -y update && apt install -y python-minimal )"
+    python_install_command: "test -e /usr/bin/python3 || ( export http_proxy={{ proxy_env.http_proxy }} && apt -y update && apt install -y python3-minimal )"
   pre_tasks:
-    - name: Install python2.x for Ansible when we are not using python3
+    - name: Install python3.x for Ansible
       raw: "{{ python_install_command }}"
       changed_when: false
       when:
